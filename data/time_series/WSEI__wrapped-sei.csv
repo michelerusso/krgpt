@@ -1,0 +1,2 @@
+date,price_usd,volume_usd,market_cap_usd,symbol,name,id,source
+2025-09-11,0.329145,30256982,0.0,WSEI,Wrapped SEI,wrapped-sei,daily_snapshot

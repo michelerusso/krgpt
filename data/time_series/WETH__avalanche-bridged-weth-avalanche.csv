@@ -1,0 +1,2 @@
+date,price_usd,volume_usd,market_cap_usd,symbol,name,id,source
+2025-09-11,4421.18,96900171,144970256.0,WETH,Avalanche Bridged WETH (Avalanche),avalanche-bridged-weth-avalanche,daily_snapshot

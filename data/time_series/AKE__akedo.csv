@@ -1,0 +1,2 @@
+date,price_usd,volume_usd,market_cap_usd,symbol,name,id,source
+2025-09-11,0.00110567,68012854,25223641.0,AKE,Akedo,akedo,daily_snapshot

@@ -1,0 +1,2 @@
+date,price_usd,volume_usd,market_cap_usd,symbol,name,id,source
+2025-09-11,0.07374,50433657,51031963.0,MAV,Maverick Protocol,maverick-protocol,daily_snapshot
