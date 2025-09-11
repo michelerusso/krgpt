@@ -40,39 +40,47 @@ jobs:
         run: |
           python scripts/build_timeseries.py
 
+      - name: Build Binance mapping (CG -> Binance pairs)
+        env:
+          BINANCE_QUOTES: "USDT,FDUSD,USDC,TUSD,BTC,ETH"
+          BINANCE_MAX_COINS: "0"  # 0 = tutte le coin nello snapshot
+        run: |
+          python scripts/build_binance_map.py
+
+      - name: Fetch OHLCV from Binance (CCXT)
+        env:
+          CCXT_TIMEFRAME: "1d"
+          CCXT_LIMIT: "1000"
+          CCXT_MAX_COINS: "0"
+        run: |
+          python scripts/fetch_ohlc_ccxt.py
+
+      - name: Fetch OHLC (CoinGecko)  # opzionale, come backup
+        if: always()
+        env:
+          OHLC_DAYS: "365"
+          OHLC_SLEEP_S: "1.2"
+          OHLC_MAX_COINS: "0"
+        run: |
+          python scripts/fetch_ohlc.py
+
       - name: Apply pending orders (slippage & fees)
         env:
-          SLIPPAGE_BPS: "25"   # 0.25% slippage
-          FEE_BPS: "10"        # 0.10% fee
+          SLIPPAGE_BPS: "25"
+          FEE_BPS: "10"
         run: |
           python scripts/simulator.py || true
 
-      - name: Fetch OHLC (CoinGecko)
+      - name: Commit & rebase-safe push
         env:
-          OHLC_DAYS: "365"        # storico da mantenere
-          OHLC_SLEEP_S: "1.2"     # rate limit
-          OHLC_MAX_COINS: "0"     # 0 = tutte le coin dello snapshot
-        run: |
-          python scripts/fetch_ohlc.py
-          
-            - name: Commit & rebase-safe push
-        env:
-          BRANCH: ${{ github.ref_name }}   # es. main
+          BRANCH: ${{ github.ref_name }}
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add data/ portfolio/
-          git commit -m "Daily update: data, sim, fills & NAV: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
-
-          # Allineati al remoto e rebase delle tue commit sopra
+          git add data/ portfolio/ data/exchange_map/
+          git commit -m "Daily update (CG+Binance OHLCV, sim, NAV): $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
           git fetch origin "$BRANCH"
-          # Se ci sono conflitti sui file generati, di solito vogliamo TENERE la versione del job
-          # Attiva il backend 'merge' per usare -X ours
           git config rebase.backend merge
           git rebase -X ours "origin/$BRANCH" || (git rebase --abort && exit 1)
-
-          # Push sul branch
           git push origin HEAD:"$BRANCH"
-

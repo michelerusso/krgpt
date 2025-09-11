@@ -23,59 +23,95 @@ def ensure_portfolio():
 
 def latest_price_symbol_map():
     rows = []
-    # preferisci OHLC
-    paths = glob.glob("data/ohlc/*.csv")
-    use_ohlc = True if paths else False
-    src_glob = "data/ohlc/*.csv" if use_ohlc else "data/time_series/*.csv"
 
-    for path in glob.glob(src_glob):
-        try:
-            df = pd.read_csv(path, parse_dates=["date"])
-        except Exception:
+    # 1) priorità: file Binance
+    for path in glob.glob("data/ohlc/*__binance_*.csv"):
+        df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
+        if df.empty: 
             continue
-        if df.empty:
-            continue
-        df = df.sort_values("date")
         last = df.iloc[-1]
-        # mappatura id/symbol dal nome file; i file OHLC non hanno id/volume/mcap dentro:
         symbol = os.path.basename(path).split("__")[0].upper()
+        price = float(last["close"])
+        volume = float(last["volume"]) if "volume" in last and pd.notna(last["volume"]) else None
 
-        # se stiamo usando OHLC, proviamo ad arricchire mcap/vol da time_series
+        # arricchisci con mcap/vol dai time_series se esiste
+        twin = sorted(glob.glob(f"data/time_series/{symbol}__*.csv"))
         mcap = None
-        volume = None
-        if use_ohlc:
-            twin = sorted(glob.glob(f"data/time_series/{symbol}__*.csv"))
-            if twin:
-                tdf = pd.read_csv(twin[-1]).sort_values("date")
-                tlast = tdf.iloc[-1]
-                mcap = float(tlast.get("market_cap_usd")) if pd.notna(tlast.get("market_cap_usd")) else None
-                volume = float(tlast.get("total_volume") if "total_volume" in tdf.columns else tlast.get("volume_usd")) if pd.notna(tlast.get("volume_usd")) else None
-
-        price = float(last["close"] if "close" in last else last["price_usd"])
-        if volume is None and "volume" in last:
-            volume = float(last["volume"]) if pd.notna(last["volume"]) else None
+        if twin:
+            tdf = pd.read_csv(twin[-1]).sort_values("date")
+            tlast = tdf.iloc[-1]
+            mcap = float(tlast.get("market_cap_usd")) if pd.notna(tlast.get("market_cap_usd")) else None
+            if volume is None and "volume_usd" in tdf.columns:
+                volume = float(tlast.get("volume_usd")) if pd.notna(tlast.get("volume_usd")) else None
 
         rows.append({
-            "path": path,
-            "symbol": symbol,
-            "id": None,                 # non ci serve per lo scoring
-            "price": price,
-            "volume": volume,
-            "mcap": mcap,
-            "nrows": len(df),
-            "r7": (df["close"].iloc[-1] / df["close"].iloc[-8] - 1) if ("close" in df and len(df) > 8) else (
-                   df["price_usd"].iloc[-1] / df["price_usd"].iloc[-8] - 1 if ("price_usd" in df and len(df) > 8) else None),
-            "r30": (df["close"].iloc[-1] / df["close"].iloc[-31] - 1) if ("close" in df and len(df) > 31) else (
-                    df["price_usd"].iloc[-1] / df["price_usd"].iloc[-31] - 1 if ("price_usd" in df and len(df) > 31) else None),
-            "r90": (df["close"].iloc[-1] / df["close"].iloc[-91] - 1) if ("close" in df and len(df) > 91) else (
-                    df["price_usd"].iloc[-1] / df["price_usd"].iloc[-91] - 1 if ("price_usd" in df and len(df) > 91) else None),
-            "vol20": (df["close"].pct_change().tail(20).std() if "close" in df else df["price_usd"].pct_change().tail(20).std()) if len(df) >= 21 else None,
+            "path": path, "symbol": symbol, "id": None,
+            "price": price, "volume": volume, "mcap": mcap, "nrows": len(df),
+            "r7": (df["close"].iloc[-1] / df["close"].iloc[-8] - 1) if len(df) > 8 else None,
+            "r30": (df["close"].iloc[-1] / df["close"].iloc[-31] - 1) if len(df) > 31 else None,
+            "r90": (df["close"].iloc[-1] / df["close"].iloc[-91] - 1) if len(df) > 91 else None,
+            "vol20": df["close"].pct_change().tail(20).std() if len(df) >= 21 else None,
         })
+
+    # 2) completa con CG/time_series per le coin rimaste
+    seen = {r["symbol"] for r in rows}
+    for path in glob.glob("data/ohlc/*.csv"):
+        if "__binance_" in path: 
+            continue
+        symbol = os.path.basename(path).split("__")[0].upper()
+        if symbol in seen:
+            continue
+        df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
+        if df.empty:
+            continue
+        last = df.iloc[-1]
+        price = float(last["close"])
+        volume = float(last["volume"]) if "volume" in last and pd.notna(last["volume"]) else None
+
+        twin = sorted(glob.glob(f"data/time_series/{symbol}__*.csv"))
+        mcap = None
+        if twin:
+            tdf = pd.read_csv(twin[-1]).sort_values("date")
+            tlast = tdf.iloc[-1]
+            mcap = float(tlast.get("market_cap_usd")) if pd.notna(tlast.get("market_cap_usd")) else None
+            if volume is None and "volume_usd" in tdf.columns:
+                volume = float(tlast.get("volume_usd")) if pd.notna(tlast.get("volume_usd")) else None
+
+        rows.append({
+            "path": path, "symbol": symbol, "id": None,
+            "price": price, "volume": volume, "mcap": mcap, "nrows": len(df),
+            "r7": (df["close"].iloc[-1] / df["close"].iloc[-8] - 1) if len(df) > 8 else None,
+            "r30": (df["close"].iloc[-1] / df["close"].iloc[-31] - 1) if len(df) > 31 else None,
+            "r90": (df["close"].iloc[-1] / df["close"].iloc[-91] - 1) if len(df) > 91 else None,
+            "vol20": df["close"].pct_change().tail(20).std() if len(df) >= 21 else None,
+        })
+
+    # 3) fallback time_series (solo se manca OHLC del simbolo)
+    seen = {r["symbol"] for r in rows}
+    for path in glob.glob("data/time_series/*.csv"):
+        symbol = os.path.basename(path).split("__")[0].upper()
+        if symbol in seen:
+            continue
+        df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
+        if df.empty:
+            continue
+        last = df.iloc[-1]
+        rows.append({
+            "path": path, "symbol": symbol, "id": None,
+            "price": float(last["price_usd"]),
+            "volume": float(last.get("volume_usd")) if "volume_usd" in df.columns and pd.notna(last.get("volume_usd")) else None,
+            "mcap": float(last.get("market_cap_usd")) if pd.notna(last.get("market_cap_usd")) else None,
+            "nrows": len(df),
+            "r7": (df["price_usd"].iloc[-1] / df["price_usd"].iloc[-8] - 1) if len(df) > 8 else None,
+            "r30": (df["price_usd"].iloc[-1] / df["price_usd"].iloc[-31] - 1) if len(df) > 31 else None,
+            "r90": (df["price_usd"].iloc[-1] / df["price_usd"].iloc[-91] - 1) if len(df) > 91 else None,
+            "vol20": df["price_usd"].pct_change().tail(20).std() if len(df) >= 21 else None,
+        })
+
     df = pd.DataFrame(rows)
     if df.empty:
-        raise SystemExit("No series found (ohlc/time_series)")
+        raise SystemExit("No series found (binance/cg/time_series)")
     return df
-
 
 def compute_nav(portfolio, prices_df):
     px = {r["symbol"]: r["price"] for _, r in prices_df.iterrows()}

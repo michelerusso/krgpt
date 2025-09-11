@@ -21,14 +21,22 @@ def load_portfolio():
     return json.load(open(POS_PATH, "r"))
 
 def latest_price(symbol):
-    # 1) prova OHLC
-    ohlc_paths = sorted(glob.glob(f"data/ohlc/{symbol.upper()}__*.csv"))
-    if ohlc_paths:
-        df = pd.read_csv(ohlc_paths[-1]).sort_values("date")
+    sym = symbol.upper()
+    # 1) preferisci OHLCV Binance
+    bn_paths = sorted(glob.glob(f"data/ohlc/{sym}__binance_*.csv"))
+    if bn_paths:
+        df = pd.read_csv(bn_paths[-1]).sort_values("date")
         row = df.iloc[-1]
         return float(row["close"]), str(row["date"])
-    # 2) fallback ai time_series
-    ts_paths = sorted(glob.glob(f"data/time_series/{symbol.upper()}__*.csv"))
+    # 2) OHLC CoinGecko
+    cg_paths = sorted(glob.glob(f"data/ohlc/{sym}__*.csv"))
+    cg_paths = [p for p in cg_paths if "__binance_" not in p]
+    if cg_paths:
+        df = pd.read_csv(cg_paths[-1]).sort_values("date")
+        row = df.iloc[-1]
+        return float(row["close"]), str(row["date"])
+    # 3) fallback time_series
+    ts_paths = sorted(glob.glob(f"data/time_series/{sym}__*.csv"))
     if ts_paths:
         df = pd.read_csv(ts_paths[-1]).sort_values("date")
         row = df.iloc[-1]
