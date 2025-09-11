@@ -2,8 +2,13 @@ name: Crypto Weekend Research & Rebalance
 
 on:
   schedule:
-    - cron: "10 07 * * 6"   # Sabato 07:10 UTC
+    - cron: "10 07 * * 6"   # 07:10 UTC (09:10 Europa/Parigi in estate)
   workflow_dispatch:
+    inputs:
+      reason:
+        description: "Motivo esecuzione manuale (opzionale)"
+        required: false
+        default: "manual"
 
 permissions:
   contents: write
@@ -27,10 +32,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas python-dateutil
 
+      - name: Prepara context (posizioni + universo + metriche)
+        env:
+          CONTEXT_TOP_N: "200"      # quante coin includere nel contesto
+        run: |
+          python scripts/prepare_context.py
+
       - name: Generate research report & next orders
         env:
-          # Se ti serve una chiave LLM per arricchire il report, usala dentro lo script
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # ---- Parametri di rischio / selezione (puoi spostarli in Settings -> Actions -> Variables) ----
+          MAX_MCAP_USD: "300000000"     # filtro micro-cap
+          LIQ_PERCENTILE: "60"          # percentile volume per filtro liquidità
+          RISK_PER_TRADE_BPS: "125"     # 1.25% NAV
+          STOP_LOSS_PCT: "0.20"         # 20%
+          TAKE_PROFIT_PCT: "0.40"       # 40%
+          MAX_NEW_POS: "8"              # max nuove posizioni per weekend
+          MAX_POSITIONS: "14"           # cap posizioni totali
+          MAX_ALLOC_PCT: "0.10"         # 10% NAV per singola
+          MIN_ALLOC_PCT: "0.02"         # 2% NAV minimo per singola
         run: |
           python scripts/weekend_research.py
 
@@ -38,6 +57,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add reports/ portfolio/next_orders.json portfolio/positions.json
+          git add reports/ portfolio/next_orders.json portfolio/positions.json data/context.json
           git commit -m "Weekend research & proposed orders: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
           git push

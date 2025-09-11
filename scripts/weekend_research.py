@@ -1,5 +1,5 @@
 # scripts/weekend_research.py
-import os, json, glob, math, datetime as dt
+import os, json, glob, datetime as dt
 import pandas as pd
 
 TS_DIR = "data/time_series"
@@ -7,24 +7,36 @@ REPORTS_DIR = "reports"
 PORT_DIR = "portfolio"
 POS_PATH = os.path.join(PORT_DIR, "positions.json")
 ORDERS_PATH = os.path.join(PORT_DIR, "next_orders.json")
+TODAY = dt.datetime.utcnow().date().isoformat()
 
 os.makedirs(REPORTS_DIR, exist_ok=True)
 os.makedirs(PORT_DIR, exist_ok=True)
 
-TODAY = dt.datetime.utcnow().date().isoformat()
+def cfg():
+    # Legge parametri dai env; default robusti
+    return {
+        "MAX_MCAP_USD": float(os.environ.get("MAX_MCAP_USD", "300000000")),
+        "LIQ_PERCENTILE": float(os.environ.get("LIQ_PERCENTILE", "60")),
+        "RISK_PER_TRADE_BPS": float(os.environ.get("RISK_PER_TRADE_BPS", "125")),  # 1.25% NAV
+        "STOP_LOSS_PCT": float(os.environ.get("STOP_LOSS_PCT", "0.20")),
+        "TAKE_PROFIT_PCT": float(os.environ.get("TAKE_PROFIT_PCT", "0.40")),
+        "MAX_NEW_POS": int(os.environ.get("MAX_NEW_POS", "8")),
+        "MAX_POSITIONS": int(os.environ.get("MAX_POSITIONS", "14")),
+        "MAX_ALLOC_PCT": float(os.environ.get("MAX_ALLOC_PCT", "0.10")),
+        "MIN_ALLOC_PCT": float(os.environ.get("MIN_ALLOC_PCT", "0.02")),
+    }
 
 def ensure_portfolio():
     if not os.path.exists(POS_PATH):
         port = {"cash": 100000.0, "positions": {}, "nav_history": [], "fills": []}
-        with open(POS_PATH, "w") as f:
-            json.dump(port, f, indent=2)
-    with open(POS_PATH, "r") as f:
-        return json.load(f)
+        json.dump(port, open(POS_PATH, "w"), indent=2)
+    return json.load(open(POS_PATH, "r"))
 
+# ---- DATI: preferisci Binance OHLCV, poi CG OHLC, poi time_series ----
 def latest_price_symbol_map():
     rows = []
 
-    # 1) priorità: file Binance
+    # 1) Binance first
     for path in glob.glob("data/ohlc/*__binance_*.csv"):
         df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
         if df.empty: 
@@ -34,8 +46,8 @@ def latest_price_symbol_map():
         price = float(last["close"])
         volume = float(last["volume"]) if "volume" in last and pd.notna(last["volume"]) else None
 
-        # arricchisci con mcap/vol dai time_series se esiste
-        twin = sorted(glob.glob(f"data/time_series/{symbol}__*.csv"))
+        # arricchisci da time_series
+        twin = sorted(glob.glob(f"{TS_DIR}/{symbol}__*.csv"))
         mcap = None
         if twin:
             tdf = pd.read_csv(twin[-1]).sort_values("date")
@@ -45,16 +57,16 @@ def latest_price_symbol_map():
                 volume = float(tlast.get("volume_usd")) if pd.notna(tlast.get("volume_usd")) else None
 
         rows.append({
-            "path": path, "symbol": symbol, "id": None,
-            "price": price, "volume": volume, "mcap": mcap, "nrows": len(df),
+            "symbol": symbol, "price": price, "volume": volume, "mcap": mcap,
+            "nrows": len(df),
             "r7": (df["close"].iloc[-1] / df["close"].iloc[-8] - 1) if len(df) > 8 else None,
             "r30": (df["close"].iloc[-1] / df["close"].iloc[-31] - 1) if len(df) > 31 else None,
             "r90": (df["close"].iloc[-1] / df["close"].iloc[-91] - 1) if len(df) > 91 else None,
             "vol20": df["close"].pct_change().tail(20).std() if len(df) >= 21 else None,
         })
 
-    # 2) completa con CG/time_series per le coin rimaste
     seen = {r["symbol"] for r in rows}
+    # 2) CoinGecko OHLC
     for path in glob.glob("data/ohlc/*.csv"):
         if "__binance_" in path: 
             continue
@@ -62,13 +74,13 @@ def latest_price_symbol_map():
         if symbol in seen:
             continue
         df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
-        if df.empty:
+        if df.empty: 
             continue
         last = df.iloc[-1]
         price = float(last["close"])
         volume = float(last["volume"]) if "volume" in last and pd.notna(last["volume"]) else None
 
-        twin = sorted(glob.glob(f"data/time_series/{symbol}__*.csv"))
+        twin = sorted(glob.glob(f"{TS_DIR}/{symbol}__*.csv"))
         mcap = None
         if twin:
             tdf = pd.read_csv(twin[-1]).sort_values("date")
@@ -78,26 +90,26 @@ def latest_price_symbol_map():
                 volume = float(tlast.get("volume_usd")) if pd.notna(tlast.get("volume_usd")) else None
 
         rows.append({
-            "path": path, "symbol": symbol, "id": None,
-            "price": price, "volume": volume, "mcap": mcap, "nrows": len(df),
+            "symbol": symbol, "price": price, "volume": volume, "mcap": mcap,
+            "nrows": len(df),
             "r7": (df["close"].iloc[-1] / df["close"].iloc[-8] - 1) if len(df) > 8 else None,
             "r30": (df["close"].iloc[-1] / df["close"].iloc[-31] - 1) if len(df) > 31 else None,
             "r90": (df["close"].iloc[-1] / df["close"].iloc[-91] - 1) if len(df) > 91 else None,
             "vol20": df["close"].pct_change().tail(20).std() if len(df) >= 21 else None,
         })
 
-    # 3) fallback time_series (solo se manca OHLC del simbolo)
+    # 3) fallback time_series
     seen = {r["symbol"] for r in rows}
-    for path in glob.glob("data/time_series/*.csv"):
+    for path in glob.glob(f"{TS_DIR}/*.csv"):
         symbol = os.path.basename(path).split("__")[0].upper()
         if symbol in seen:
             continue
         df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
-        if df.empty:
+        if df.empty: 
             continue
         last = df.iloc[-1]
         rows.append({
-            "path": path, "symbol": symbol, "id": None,
+            "symbol": symbol,
             "price": float(last["price_usd"]),
             "volume": float(last.get("volume_usd")) if "volume_usd" in df.columns and pd.notna(last.get("volume_usd")) else None,
             "mcap": float(last.get("market_cap_usd")) if pd.notna(last.get("market_cap_usd")) else None,
@@ -120,46 +132,39 @@ def compute_nav(portfolio, prices_df):
         nav += float(qty) * float(px.get(sym, 0.0))
     return nav
 
-def select_candidates(df):
-    # filtri base
-    df = df.dropna(subset=["price","mcap","volume"]).copy()
-    df = df[(df["mcap"] > 0) & (df["mcap"] < 300_000_000)]
+def select_candidates(df, C):
+    df = df.dropna(subset=["price"]).copy()
+    # filtro micro-cap se disponibile
+    df = df[df["mcap"].notna() & (df["mcap"] > 0) & (df["mcap"] < C["MAX_MCAP_USD"])]
     if df.empty:
         return df
-    # liquidità: sopra il 60° percentile
-    vol_thr = df["volume"].quantile(0.6)
+    # liquidità: percentile su volume (se mancante, riempi con 0)
+    df["volume"] = df["volume"].fillna(0.0)
+    vol_thr = df["volume"].quantile(C["LIQ_PERCENTILE"]/100.0)
     df = df[df["volume"] >= vol_thr].copy()
-    # punteggio: momentum 7/30 con penalità volatilità
+    # score: momentum penalizzato per volatilità
     df["r7"] = df["r7"].fillna(0.0)
     df["r30"] = df["r30"].fillna(0.0)
     df["vol20"] = df["vol20"].fillna(df["vol20"].median() if df["vol20"].notna().any() else 0.0)
     df["score"] = 0.5*df["r7"] + 0.5*df["r30"] - 0.2*df["vol20"]
-    df = df.sort_values("score", ascending=False)
-    return df
+    return df.sort_values("score", ascending=False)
 
-def sizing_plan(nav, cash, candidates, current_positions):
-    # Parametri di rischio
-    max_new_positions = 8
-    risk_per_trade = 0.0125 * nav          # 1.25% NAV per trade
-    stop_pct = 0.20                         # stop “teorico” 20%
-    max_alloc_per_pos = 0.10 * nav          # non oltre 10% NAV per singola
-    min_alloc_per_pos = 0.02 * nav          # minimo 2% NAV
-    portfolio_max_positions = 14            # cap posizioni totali
-
-    # quante posizioni nuove possiamo aprire
-    room = max(0, portfolio_max_positions - len(current_positions))
-    n_to_open = min(max_new_positions, room, len(candidates))
+def sizing_plan(nav, cash, candidates, current_positions, C):
+    risk_per_trade = (C["RISK_PER_TRADE_BPS"] / 10_000.0) * nav
+    stop_pct = C["STOP_LOSS_PCT"]
+    max_alloc = C["MAX_ALLOC_PCT"] * nav
+    min_alloc = C["MIN_ALLOC_PCT"] * nav
+    room = max(0, C["MAX_POSITIONS"] - len(current_positions))
+    n_to_open = min(C["MAX_NEW_POS"], room, len(candidates))
 
     planned = []
     for _, r in candidates.head(n_to_open).iterrows():
         sym, price = r["symbol"], r["price"]
-        # position sizing: dollar_at_risk / stop_distance
-        # se vol20 molto alta, riduci dimensione
         vol_k = 1.0 / max(r["vol20"], 1e-4)
         target_risk_dollars = risk_per_trade * min(vol_k, 3.0)
         alloc_usd = target_risk_dollars / max(stop_pct, 1e-6)
-        alloc_usd = float(min(max(alloc_usd, min_alloc_per_pos), max_alloc_per_pos, cash * 0.5))  # non spendere oltre 50% della cassa in un colpo
-        if alloc_usd < min_alloc_per_pos * 0.6:  # troppo piccolo → salta
+        alloc_usd = float(min(max(alloc_usd, min_alloc), max_alloc, cash * 0.5))
+        if alloc_usd < min_alloc * 0.6:
             continue
         qty = round(alloc_usd / price, 6)
         planned.append({
@@ -169,16 +174,15 @@ def sizing_plan(nav, cash, candidates, current_positions):
             "notional_usd": round(alloc_usd, 2),
             "quantity": qty,
             "stop_loss_pct": stop_pct,
-            "take_profit_pct": 0.40,   # TP 40% opzionale
+            "take_profit_pct": C["TAKE_PROFIT_PCT"],
             "notes": f"score={round(r['score'],4)}, r7={round(r['r7'],3)}, r30={round(r['r30'],3)}, vol20={round(r['vol20'],4)}"
         })
         cash -= alloc_usd
-        if cash <= nav * 0.02:  # lascia un 2% buffer cash
+        if cash <= nav * 0.02:
             break
     return planned
 
-def decide_exits(df, current_positions):
-    # vende totalmente se score in bottom del 30% dell’universo filtrato
+def decide_exits(df, current_positions, C):
     if df.empty or not current_positions:
         return []
     cutoff = df["score"].quantile(0.30)
@@ -196,32 +200,23 @@ def decide_exits(df, current_positions):
     return exits
 
 def main():
+    C = cfg()
     portfolio = ensure_portfolio()
     price_df = latest_price_symbol_map()
     nav = compute_nav(portfolio, price_df)
     cash = float(portfolio.get("cash", 0.0))
 
-    filtered = select_candidates(price_df)
-    buys = sizing_plan(nav, cash, filtered, portfolio.get("positions", {}))
-    sells = decide_exits(filtered, portfolio.get("positions", {}))
-
+    filtered = select_candidates(price_df, C)
+    buys = sizing_plan(nav, cash, filtered, portfolio.get("positions", {}), C)
+    sells = decide_exits(filtered, portfolio.get("positions", {}), C)
     orders = sells + buys
 
-    # salva ordini
-    with open(ORDERS_PATH, "w") as f:
-        json.dump({
-            "as_of": TODAY,
-            "orders": orders,
-            "assumptions": {
-                "max_mcap_usd": 300_000_000,
-                "liquidity_percentile": 60,
-                "risk_per_trade_pct_nav": 1.25,
-                "stop_loss_pct_default": 20,
-                "take_profit_pct_default": 40
-            }
-        }, f, indent=2)
+    json.dump({
+        "as_of": TODAY,
+        "orders": orders,
+        "assumptions": C
+    }, open(ORDERS_PATH, "w"), indent=2)
 
-    # report markdown
     report_path = os.path.join(REPORTS_DIR, f"{TODAY}.md")
     lines = []
     lines.append(f"# Weekend Crypto Research — {TODAY}\n")
@@ -244,9 +239,7 @@ def main():
                 lines.append(f"- **{o['side']} {o['symbol']}** qty={qty} — {o['notes']}")
     else:
         lines.append("- Nessun ordine proposto.")
-    with open(report_path, "w") as f:
-        f.write("\n".join(lines))
-
+    open(report_path, "w").write("\n".join(lines))
     print(f"Wrote {ORDERS_PATH} and {report_path}")
 
 if __name__ == "__main__":
