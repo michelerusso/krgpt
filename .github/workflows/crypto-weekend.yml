@@ -2,38 +2,42 @@ name: Crypto Weekend Research & Rebalance
 
 on:
   schedule:
-    - cron: "10 07 * * 6"   # 07:10 UTC sabato
+    - cron: "10 07 * * 6"   # Sabato 07:10 UTC
   workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
 
 jobs:
   weekend:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install ccxt requests pandas python-dateutil
+          pip install pandas python-dateutil
 
-      - name: Deep research (LLM) & plan
+      - name: Generate research report & next orders
         env:
+          # Se ti serve una chiave LLM per arricchire il report, usala dentro lo script
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python scripts/weekend_research.py
 
-      - name: Commit report
+      - name: Commit report & orders
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add reports/ portfolio/
-          git commit -m "Weekend research: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
+          git add reports/ portfolio/next_orders.json portfolio/positions.json
+          git commit -m "Weekend research & proposed orders: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
           git push
