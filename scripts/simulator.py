@@ -22,15 +22,14 @@ def load_portfolio():
 
 def latest_price(symbol):
     sym = symbol.upper()
-    # 1) preferisci OHLCV Binance
-    bn_paths = sorted(glob.glob(f"data/ohlc/{sym}__binance_*.csv"))
-    if bn_paths:
-        df = pd.read_csv(bn_paths[-1]).sort_values("date")
+    # 1) priorità: CCXT (qualsiasi exchange)
+    ccxt_paths = sorted(glob.glob(f"data/ohlc/{sym}__ccxt_*_*.csv"))
+    if ccxt_paths:
+        df = pd.read_csv(ccxt_paths[-1]).sort_values("date")
         row = df.iloc[-1]
         return float(row["close"]), str(row["date"])
-    # 2) OHLC CoinGecko
-    cg_paths = sorted(glob.glob(f"data/ohlc/{sym}__*.csv"))
-    cg_paths = [p for p in cg_paths if "__binance_" not in p]
+    # 2) CoinGecko OHLC
+    cg_paths = [p for p in sorted(glob.glob(f"data/ohlc/{sym}__*.csv")) if "__ccxt_" not in p]
     if cg_paths:
         df = pd.read_csv(cg_paths[-1]).sort_values("date")
         row = df.iloc[-1]
@@ -42,6 +41,7 @@ def latest_price(symbol):
         row = df.iloc[-1]
         return float(row["price_usd"]), str(row["date"])
     raise ValueError(f"No price data for {symbol}")
+
 
 def compute_nav(port):
     nav = port.get("cash", 0.0)

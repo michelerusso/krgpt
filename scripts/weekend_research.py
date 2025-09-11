@@ -42,9 +42,8 @@ def ensure_portfolio():
 # ---- DATI: preferisci Binance OHLCV, poi CG OHLC, poi time_series ----
 def latest_price_symbol_map():
     rows = []
-
-    # 1) Binance first
-    for path in glob.glob("data/ohlc/*__binance_*.csv"):
+    # 1) CCXT (qualsiasi exchange)
+    for path in glob.glob("data/ohlc/*__ccxt_*_*.csv"):
         df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
         if df.empty:
             continue
@@ -53,7 +52,6 @@ def latest_price_symbol_map():
         price = float(last["close"])
         volume = float(last["volume"]) if "volume" in last and pd.notna(last["volume"]) else None
 
-        # arricchisci da time_series
         twin = sorted(glob.glob(f"{TS_DIR}/{symbol}__*.csv"))
         mcap = None
         if twin:
@@ -72,10 +70,10 @@ def latest_price_symbol_map():
             "vol20": df["close"].pct_change().tail(20).std() if len(df) >= 21 else None,
         })
 
+    # 2) CG OHLC
     seen = {r["symbol"] for r in rows}
-    # 2) CoinGecko OHLC
     for path in glob.glob("data/ohlc/*.csv"):
-        if "__binance_" in path:
+        if "__ccxt_" in path:
             continue
         symbol = os.path.basename(path).split("__")[0].upper()
         if symbol in seen:
@@ -105,7 +103,7 @@ def latest_price_symbol_map():
             "vol20": df["close"].pct_change().tail(20).std() if len(df) >= 21 else None,
         })
 
-    # 3) fallback time_series
+    # 3) Fallback time_series
     seen = {r["symbol"] for r in rows}
     for path in glob.glob(f"{TS_DIR}/*.csv"):
         symbol = os.path.basename(path).split("__")[0].upper()
@@ -129,8 +127,9 @@ def latest_price_symbol_map():
 
     df = pd.DataFrame(rows)
     if df.empty:
-        raise SystemExit("No series found (binance/cg/time_series)")
+        raise SystemExit("No series found (ccxt/cg/time_series)")
     return df
+
 
 def compute_nav(portfolio, prices_df):
     px = {r["symbol"]: r["price"] for _, r in prices_df.iterrows()}

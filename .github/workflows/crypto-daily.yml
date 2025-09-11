@@ -40,21 +40,25 @@ jobs:
         run: |
           python scripts/build_timeseries.py
 
-      - name: Build Binance mapping (CG -> Binance pairs)
+      # ---- CCXT (exchange-grade OHLCV) ----
+      - name: Build CCXT mapping (CG -> pairs)
         env:
-          BINANCE_QUOTES: "USDT,FDUSD,USDC,TUSD,BTC,ETH"
-          BINANCE_MAX_COINS: "0"
+          CCXT_EXCHANGE: "binanceus"                       # cambia qui (es. "kraken", "kucoin") se vuoi
+          CCXT_QUOTES: "USDT,USD,FDUSD,USDC,TUSD,BTC,ETH,EUR"
+          CCXT_MAX_COINS_MAP: "0"
         run: |
-          python scripts/build_binance_map.py
+          python scripts/build_ccxt_map.py || true         # non bloccare il job se l'exchange non è raggiungibile
 
-      - name: Fetch OHLCV from Binance (CCXT)
+      - name: Fetch OHLCV from CCXT
         env:
+          CCXT_EXCHANGE: "binanceus"
           CCXT_TIMEFRAME: "1d"
           CCXT_LIMIT: "1000"
           CCXT_MAX_COINS: "0"
         run: |
-          python scripts/fetch_ohlc_ccxt.py
+          python scripts/fetch_ohlc_ccxt.py || true
 
+      # ---- CoinGecko (backup) ----
       - name: Fetch OHLC (CoinGecko)  # backup
         env:
           OHLC_DAYS: "365"
@@ -72,14 +76,4 @@ jobs:
 
       - name: Commit & rebase-safe push
         env:
-          BRANCH: ${{ github.ref_name }}
-        run: |
-          set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ portfolio/ data/exchange_map/ || true
-          git commit -m "Daily update (CG+Binance OHLCV, sim, NAV): $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
-          git fetch origin "$BRANCH"
-          git config rebase.backend merge
-          git rebase -X ours "origin/$BRANCH" || (git rebase --abort && exit 1)
-          git push origin HEAD:"$BRANCH"
+          BRANCH: $
