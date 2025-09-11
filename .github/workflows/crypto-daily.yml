@@ -28,13 +28,8 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install pandas python-dateutil requests ccxt
-
-      - name: Install deps
-        run: |
-          python -m pip install --upgrade pip
           pip install pandas python-dateutil requests ccxt tabulate
-          
+
       - name: Fetch prices & simulate
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -48,7 +43,7 @@ jobs:
       - name: Build Binance mapping (CG -> Binance pairs)
         env:
           BINANCE_QUOTES: "USDT,FDUSD,USDC,TUSD,BTC,ETH"
-          BINANCE_MAX_COINS: "0"  # 0 = tutte le coin nello snapshot
+          BINANCE_MAX_COINS: "0"
         run: |
           python scripts/build_binance_map.py
 
@@ -60,8 +55,7 @@ jobs:
         run: |
           python scripts/fetch_ohlc_ccxt.py
 
-      - name: Fetch OHLC (CoinGecko)  # opzionale, come backup
-        if: always()
+      - name: Fetch OHLC (CoinGecko)  # backup
         env:
           OHLC_DAYS: "365"
           OHLC_SLEEP_S: "1.2"
@@ -76,19 +70,16 @@ jobs:
         run: |
           python scripts/simulator.py || true
 
-            - name: Commit & rebase-safe push
+      - name: Commit & rebase-safe push
         env:
-          BRANCH: ${{ github.ref_name }}   # es. main
+          BRANCH: ${{ github.ref_name }}
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add data/ portfolio/ reports/ data/exchange_map/ || true
-          git commit -m "Update: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
-
+          git add data/ portfolio/ data/exchange_map/ || true
+          git commit -m "Daily update (CG+Binance OHLCV, sim, NAV): $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
           git fetch origin "$BRANCH"
           git config rebase.backend merge
           git rebase -X ours "origin/$BRANCH" || (git rebase --abort && exit 1)
-
           git push origin HEAD:"$BRANCH"
