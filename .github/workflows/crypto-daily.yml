@@ -15,6 +15,8 @@ concurrency:
 jobs:
   daily:
     runs-on: ubuntu-latest
+    env:
+     CCXT_EXCHANGE: ${{ vars.CCXT_EXCHANGE }}   # prende la Repository Variable
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,7 +45,6 @@ jobs:
       # ---- CCXT (exchange-grade OHLCV) ----
       - name: Build CCXT mapping (CG -> pairs)
         env:
-          CCXT_EXCHANGE: "kraken"                       # cambia qui (es. "binanceus", "kucoin")
           CCXT_QUOTES: "USDT,USD,FDUSD,USDC,TUSD,BTC,ETH,EUR"
           CCXT_MAX_COINS_MAP: "0"
         run: |
@@ -51,7 +52,6 @@ jobs:
 
       - name: Fetch OHLCV from CCXT
         env:
-          CCXT_EXCHANGE: "kraken"
           CCXT_TIMEFRAME: "1d"
           CCXT_LIMIT: "1000"
           CCXT_MAX_COINS: "0"

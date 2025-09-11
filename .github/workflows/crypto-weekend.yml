@@ -17,6 +17,8 @@ permissions:
 jobs:
   weekend:
     runs-on: ubuntu-latest
+    env:
+     CCXT_EXCHANGE: ${{ vars.CCXT_EXCHANGE }}   # prende la Repository Variable
     steps:
       - uses: actions/checkout@v4
         with:
