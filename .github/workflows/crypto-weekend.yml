@@ -1,15 +1,16 @@
-name: Crypto Daily Data & Simulation
+name: Crypto Weekend Research & Rebalance
 
 on:
   schedule:
-    - cron: "05 06 * * 1-5"   # 06:05 UTC lun-ven (le 08:05 Europa/Parigi in inverno; 07:05 in estate)
+    - cron: "10 07 * * 6"   # 07:10 UTC sabato
   workflow_dispatch:
 
 jobs:
-  daily:
+  weekend:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # per commit/push con GITHUB_TOKEN
+      contents: write
+      issues: write
     steps:
       - uses: actions/checkout@v4
 
@@ -23,17 +24,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install ccxt requests pandas python-dateutil
 
-      - name: Fetch prices & simulate
+      - name: Deep research (LLM) & plan
         env:
-          # se usi OpenAI/anthropic per piccole note giornaliere, aggiungi le chiavi nei Secrets
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          python scripts/fetch_and_simulate.py
+          python scripts/weekend_research.py
 
-      - name: Commit data
+      - name: Commit report
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ portfolio/
-          git commit -m "Daily data & sim: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
+          git add reports/ portfolio/
+          git commit -m "Weekend research: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
           git push
