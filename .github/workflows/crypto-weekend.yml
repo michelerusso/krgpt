@@ -2,7 +2,7 @@ name: Crypto Weekend Research & Rebalance
 
 on:
   schedule:
-    - cron: "10 07 * * 6"   # 07:10 UTC (09:10 Europa/Parigi in estate)
+    - cron: "10 07 * * 6"   # sabato 07:10 UTC
   workflow_dispatch:
     inputs:
       reason:
@@ -30,47 +30,38 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install pandas python-dateutil
-
-      - name: Install deps
-        run: |
-          python -m pip install --upgrade pip
           pip install pandas python-dateutil tabulate
-          
-      - name: Prepara context (posizioni + universo + metriche)
+
+      - name: Prepara context (posizioni + universo)
         env:
-          CONTEXT_TOP_N: "200"      # quante coin includere nel contesto
+          CONTEXT_TOP_N: "200"
         run: |
           python scripts/prepare_context.py
 
       - name: Generate research report & next orders
         env:
-          # ---- Parametri di rischio / selezione (puoi spostarli in Settings -> Actions -> Variables) ----
-          MAX_MCAP_USD: "300000000"     # filtro micro-cap
-          LIQ_PERCENTILE: "60"          # percentile volume per filtro liquidità
-          RISK_PER_TRADE_BPS: "125"     # 1.25% NAV
-          STOP_LOSS_PCT: "0.20"         # 20%
-          TAKE_PROFIT_PCT: "0.40"       # 40%
-          MAX_NEW_POS: "8"              # max nuove posizioni per weekend
-          MAX_POSITIONS: "14"           # cap posizioni totali
-          MAX_ALLOC_PCT: "0.10"         # 10% NAV per singola
-          MIN_ALLOC_PCT: "0.02"         # 2% NAV minimo per singola
+          MAX_MCAP_USD: "300000000"
+          LIQ_PERCENTILE: "60"
+          RISK_PER_TRADE_BPS: "125"
+          STOP_LOSS_PCT: "0.20"
+          TAKE_PROFIT_PCT: "0.40"
+          MAX_NEW_POS: "8"
+          MAX_POSITIONS: "14"
+          MAX_ALLOC_PCT: "0.10"
+          MIN_ALLOC_PCT: "0.02"
         run: |
           python scripts/weekend_research.py
 
-           - name: Commit & rebase-safe push
+      - name: Commit & rebase-safe push
         env:
           BRANCH: ${{ github.ref_name }}   # es. main
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add data/ portfolio/ reports/ data/exchange_map/ || true
-          git commit -m "Update: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
-
+          git add reports/ portfolio/ data/context.json || true
+          git commit -m "Weekend research & proposed orders: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
           git fetch origin "$BRANCH"
           git config rebase.backend merge
           git rebase -X ours "origin/$BRANCH" || (git rebase --abort && exit 1)
-
           git push origin HEAD:"$BRANCH"
