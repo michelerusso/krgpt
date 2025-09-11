@@ -43,7 +43,7 @@ jobs:
       # ---- CCXT (exchange-grade OHLCV) ----
       - name: Build CCXT mapping (CG -> pairs)
         env:
-          CCXT_EXCHANGE: "binanceus"                       # cambia qui (es. "kraken", "kucoin") se vuoi
+          CCXT_EXCHANGE: "binanceus"                       # cambia qui (es. "kraken", "kucoin")
           CCXT_QUOTES: "USDT,USD,FDUSD,USDC,TUSD,BTC,ETH,EUR"
           CCXT_MAX_COINS_MAP: "0"
         run: |
@@ -76,4 +76,14 @@ jobs:
 
       - name: Commit & rebase-safe push
         env:
-          BRANCH: $
+          BRANCH: ${{ github.ref_name }}   # es. main
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/ portfolio/ data/exchange_map/ || true
+          git commit -m "Daily update (CG+CCXT OHLCV, sim, NAV): $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
+          git fetch origin "$BRANCH"
+          git config rebase.backend merge
+          git rebase -X ours "origin/$BRANCH" || (git rebase --abort && exit 1)
+          git push origin HEAD:"$BRANCH"
