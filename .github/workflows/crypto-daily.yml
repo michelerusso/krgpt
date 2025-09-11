@@ -55,10 +55,24 @@ jobs:
         run: |
           python scripts/fetch_ohlc.py
           
-      - name: Commit updates
+            - name: Commit & rebase-safe push
+        env:
+          BRANCH: ${{ github.ref_name }}   # es. main
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           git add data/ portfolio/
           git commit -m "Daily update: data, sim, fills & NAV: $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
-          git push
+
+          # Allineati al remoto e rebase delle tue commit sopra
+          git fetch origin "$BRANCH"
+          # Se ci sono conflitti sui file generati, di solito vogliamo TENERE la versione del job
+          # Attiva il backend 'merge' per usare -X ours
+          git config rebase.backend merge
+          git rebase -X ours "origin/$BRANCH" || (git rebase --abort && exit 1)
+
+          # Push sul branch
+          git push origin HEAD:"$BRANCH"
+
