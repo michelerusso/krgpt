@@ -42,8 +42,8 @@ def ensure_portfolio():
 # ---- DATI: preferisci Binance OHLCV, poi CG OHLC, poi time_series ----
 def latest_price_symbol_map():
     rows = []
-    # 1) CCXT (qualsiasi exchange)
-    for path in glob.glob("data/ohlc/*__ccxt_*_*.csv"):
+    # 1) CCXT (solo kraken)
+    for path in glob.glob("data/ohlc/*__ccxt_kraken_*.csv"):
         df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
         if df.empty:
             continue

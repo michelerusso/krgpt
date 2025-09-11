@@ -22,8 +22,8 @@ def load_portfolio():
 
 def latest_price(symbol):
     sym = symbol.upper()
-    # 1) priorità: CCXT (qualsiasi exchange)
-    ccxt_paths = sorted(glob.glob(f"data/ohlc/{sym}__ccxt_*_*.csv"))
+    # 1) CCXT Kraken soltanto
+    ccxt_paths = sorted(glob.glob(f"data/ohlc/{sym}__ccxt_kraken_*.csv"))
     if ccxt_paths:
         df = pd.read_csv(ccxt_paths[-1]).sort_values("date")
         row = df.iloc[-1]
@@ -34,14 +34,13 @@ def latest_price(symbol):
         df = pd.read_csv(cg_paths[-1]).sort_values("date")
         row = df.iloc[-1]
         return float(row["close"]), str(row["date"])
-    # 3) fallback time_series
+    # 3) Fallback time_series
     ts_paths = sorted(glob.glob(f"data/time_series/{sym}__*.csv"))
     if ts_paths:
         df = pd.read_csv(ts_paths[-1]).sort_values("date")
         row = df.iloc[-1]
         return float(row["price_usd"]), str(row["date"])
     raise ValueError(f"No price data for {symbol}")
-
 
 def compute_nav(port):
     nav = port.get("cash", 0.0)
