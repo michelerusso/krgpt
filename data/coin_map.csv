@@ -1,5 +1,12 @@
 id,symbol,name,last_seen
+multiple-network,MTP,Multiple Network,2025-09-11
+unit-ethereum,UETH,Unit Ethereum,2025-09-11
+wrapped-tron,WTRX,Wrapped Tron,2025-09-11
+kinesis-gold,KAU,Kinesis Gold,2025-09-11
+sahara-ai,SAHARA,Sahara AI,2025-09-11
+switchboard,SWTCH,Switchboard,2025-09-11
 wrapped-solana,SOL,Wrapped SOL,2025-09-11
+tellor,TRB,Tellor Tributes,2025-09-11
 bnb48-club-token,KOGE,KOGE,2025-09-11
 endurance,ACE,Fusionist,2025-09-11
 aicell,AICELL,AICell,2025-09-11
@@ -7,105 +14,102 @@ numeraire,NMR,Numeraire,2025-09-11
 somnia,SOMI,Somnia,2025-09-11
 holoworld,HOLO,Holoworld,2025-09-11
 openledger-2,OPEN,OpenLedger,2025-09-11
-bakerytoken,BAKE,BakerySwap,2025-09-11
-bio-protocol,BIO,Bio Protocol,2025-09-11
 boost-2,BOOST,Boost,2025-09-11
-avantis,AVNT,Avantis,2025-09-11
+bio-protocol,BIO,Bio Protocol,2025-09-11
+bakerytoken,BAKE,BakerySwap,2025-09-11
+world-of-dypians,WOD,World of Dypians,2025-09-11
 synfutures,F,SynFutures,2025-09-11
-tradoor,TRADOOR,Tradoor,2025-09-11
+avantis,AVNT,Avantis,2025-09-11
 kaito,KAITO,KAITO,2025-09-11
 ugold-inc,UGOLD,UGOLD Inc.,2025-09-11
 ai16z,AI16Z,ai16z,2025-09-11
 sui-bridged-usdt-sui,SBUSDT,Sui Bridged USDT (Sui),2025-09-11
-multiple-network,MTP,Multiple Network,2025-09-11
 dolomite,DOLO,Dolomite,2025-09-11
 yield-guild-games,YGG,Yield Guild Games,2025-09-11
 succinct,PROVE,Succinct,2025-09-11
-unit-ethereum,UETH,Unit Ethereum,2025-09-11
+wrapped-ether-linea,WETH,Bridged Wrapped Ether (Linea),2025-09-11
+tradoor,TRADOOR,Tradoor,2025-09-11
+aave-v3-usdt,AUSDT,Aave v3 USDT,2025-09-11
 avalanche-bridged-weth-avalanche,WETH,Avalanche Bridged WETH (Avalanche),2025-09-11
-wrapped-tron,WTRX,Wrapped Tron,2025-09-11
-codatta,XNY,Codatta,2025-09-11
-bridged-usd-coin-linea,USDC,Bridged USD Coin (Linea),2025-09-11
 pixels,PIXEL,Pixels,2025-09-11
-portal-to-bitcoin,PTB,Portal to Bitcoin,2025-09-11
+berachain-bera,BERA,Berachain,2025-09-11
 xai-blockchain,XAI,Xai,2025-09-11
-tellor,TRB,Tellor Tributes,2025-09-11
+bridged-usd-coin-linea,USDC,Bridged USD Coin (Linea),2025-09-11
 sapien-2,SAPIEN,Sapien,2025-09-11
+akedo,AKE,Akedo,2025-09-11
+wrappedm-by-m0,WM,WrappedM by M^0,2025-09-11
 omni-network,OMNI,Omni Network,2025-09-11
 binance-bitcoin,BTCB,Binance Bitcoin,2025-09-11
-wrappedm-by-m0,WM,WrappedM by M^0,2025-09-11
-io,IO,io.net,2025-09-11
-akedo,AKE,Akedo,2025-09-11
 xpin-network,XPIN,XPIN Network,2025-09-11
-bouncebit,BB,BounceBit,2025-09-11
-wrapped-ether-linea,WETH,Bridged Wrapped Ether (Linea),2025-09-11
 unit-solana,USOL,Unit Solana,2025-09-11
-htx-dao,HTX,HTX DAO,2025-09-11
-peanut-the-squirrel,PNUT,Peanut the Squirrel,2025-09-11
-ben-pasternak,LAUNCHCOIN,Launch Coin on Believe,2025-09-11
+io,IO,io.net,2025-09-11
+roam-token,ROAM,ROAM Token,2025-09-11
 spark-2,SPK,Spark,2025-09-11
+codatta,XNY,Codatta,2025-09-11
+htx-dao,HTX,HTX DAO,2025-09-11
+bouncebit,BB,BounceBit,2025-09-11
 staked-tao-root,SN0,Staked TAO (Root),2025-09-11
+memecoin-2,MEME,Memecoin,2025-09-11
 useless-3,USELESS,Useless Coin,2025-09-11
+ben-pasternak,LAUNCHCOIN,Launch Coin on Believe,2025-09-11
 og-fan-token,OG,OG Fan Token,2025-09-11
+stablr-usd,USDR,StablR USD,2025-09-11
 soon-2,SOON,SOON,2025-09-11
 naoris,NAORIS,Naoris Protocol,2025-09-11
+portal-to-bitcoin,PTB,Portal to Bitcoin,2025-09-11
 maverick-protocol,MAV,Maverick Protocol,2025-09-11
-euro-coin,EURC,EURC,2025-09-11
-aave-v3-usdt,AUSDT,Aave v3 USDT,2025-09-11
 grass,GRASS,Grass,2025-09-11
-redstone-oracles,RED,RedStone,2025-09-11
-stablr-usd,USDR,StablR USD,2025-09-11
-societe-generale-forge-eurcv,EURCV,EUR CoinVertible,2025-09-11
-cudis,CUDIS,Cudis,2025-09-11
+euro-coin,EURC,EURC,2025-09-11
 flock-2,FLOCK,FLOCK,2025-09-11
-magic,MAGIC,Treasure,2025-09-11
 unit-pump,UPUMP,Unit Pump,2025-09-11
-self-chain,SLF,Self Chain,2025-09-11
-bsquared-network,B2,BSquared Network,2025-09-11
-humanity,H,Humanity,2025-09-11
-zora,ZORA,Zora,2025-09-11
+redstone-oracles,RED,RedStone,2025-09-11
+cudis,CUDIS,Cudis,2025-09-11
 stp-network,AWE,AWE Network,2025-09-11
-mantra-dao,OM,MANTRA,2025-09-11
-aevo-exchange,AEVO,Aevo,2025-09-11
-memecoin-2,MEME,Memecoin,2025-09-11
-overtake,TAKE,OVERTAKE,2025-09-11
-mask-network,MASK,Mask Network,2025-09-11
-solayer,LAYER,Solayer,2025-09-11
-neiro-3,NEIRO,Neiro,2025-09-11
-hyperlane,HYPER,Hyperlane,2025-09-11
-satlayer,SLAY,SatLayer,2025-09-11
-wayfinder,PROMPT,Wayfinder,2025-09-11
-ordinals,ORDI,ORDI,2025-09-11
-kinesis-gold,KAU,Kinesis Gold,2025-09-11
-okzoo,AIOT,OKZOO,2025-09-11
-gata,GATA,Gata,2025-09-11
+zora,ZORA,Zora,2025-09-11
+humanity,H,Humanity,2025-09-11
+bsquared-network,B2,BSquared Network,2025-09-11
 hifi-finance,HIFI,Hifi Finance,2025-09-11
-roam-token,ROAM,ROAM Token,2025-09-11
-treehouse,TREE,Treehouse,2025-09-11
+gata,GATA,Gata,2025-09-11
+self-chain,SLF,Self Chain,2025-09-11
+hyperlane,HYPER,Hyperlane,2025-09-11
+mask-network,MASK,Mask Network,2025-09-11
+mantra-dao,OM,MANTRA,2025-09-11
+overtake,TAKE,OVERTAKE,2025-09-11
 kamino,KMNO,Kamino,2025-09-11
-sahara-ai,SAHARA,Sahara AI,2025-09-11
-yearn-finance,YFI,yearn.finance,2025-09-11
-gunz,GUN,Gunz,2025-09-11
-meet48,IDOL,MEET48,2025-09-11
-wrapped-aave-ethereum-lido-gho,WAETHLIDOGHO,Wrapped Aave Ethereum Lido GHO,2025-09-11
-cat-in-a-dogs-world,MEW,cat in a dogs world,2025-09-11
-ondo-u-s-dollar-token,USDON,Ondo U.S. Dollar Token,2025-09-11
-ika,IKA,Ika,2025-09-11
-baby-doge-coin,BABYDOGE,Baby Doge Coin,2025-09-11
-chaingpt,CGPT,ChainGPT,2025-09-11
-velo,VELO,Velo,2025-09-11
+neiro-3,NEIRO,Neiro,2025-09-11
+wayfinder,PROMPT,Wayfinder,2025-09-11
+okzoo,AIOT,OKZOO,2025-09-11
+satlayer,SLAY,SatLayer,2025-09-11
+ordinals,ORDI,ORDI,2025-09-11
+solayer,LAYER,Solayer,2025-09-11
+aevo-exchange,AEVO,Aevo,2025-09-11
 infinit,IN,INFINIT,2025-09-11
-lagrange,LA,Lagrange,2025-09-11
-berachain-bera,BERA,Berachain,2025-09-11
+magic,MAGIC,Treasure,2025-09-11
+yearn-finance,YFI,yearn.finance,2025-09-11
+balance,EPT,Balance,2025-09-11
+societe-generale-forge-eurcv,EURCV,EUR CoinVertible,2025-09-11
+cat-in-a-dogs-world,MEW,cat in a dogs world,2025-09-11
+meet48,IDOL,MEET48,2025-09-11
+gunz,GUN,Gunz,2025-09-11
+ika,IKA,Ika,2025-09-11
+wrapped-sei,WSEI,Wrapped SEI,2025-09-11
+pop-2,POP,Zypher Network,2025-09-11
+treehouse,TREE,Treehouse,2025-09-11
+ondo-u-s-dollar-token,USDON,Ondo U.S. Dollar Token,2025-09-11
+wrapped-aave-ethereum-lido-gho,WAETHLIDOGHO,Wrapped Aave Ethereum Lido GHO,2025-09-11
+chaingpt,CGPT,ChainGPT,2025-09-11
+peanut-the-squirrel,PNUT,Peanut the Squirrel,2025-09-11
+baby-doge-coin,BABYDOGE,Baby Doge Coin,2025-09-11
+velo,VELO,Velo,2025-09-11
 maker,MKR,Maker,2025-09-11
 connect-token-wct,WCT,WalletConnect Token,2025-09-11
 aixbt,AIXBT,aixbt,2025-09-11
-wrapped-sei,WSEI,Wrapped SEI,2025-09-11
-bas,BAS,BNB Attestation Service,2025-09-11
+straitsx-xusd,XUSD,StraitsX XUSD,2025-09-11
 sleepless-ai,AI,Sleepless AI,2025-09-11
-pop-2,POP,Zypher Network,2025-09-11
 reallink,REAL,RealLink,2025-09-11
+lagrange,LA,Lagrange,2025-09-11
 wrapped-near,WNEAR,Wrapped Near,2025-09-11
 book-of-meme,BOME,BOOK OF MEME,2025-09-11
-straitsx-xusd,XUSD,StraitsX XUSD,2025-09-11
-switchboard,SWTCH,Switchboard,2025-09-11
+bas,BAS,BNB Attestation Service,2025-09-11
+saga-2,SAGA,Saga,2025-09-11
+alchemist-ai,ALCH,Alchemist AI,2025-09-11
