@@ -26,6 +26,13 @@ def cfg():
         "MIN_ALLOC_PCT": float(os.environ.get("MIN_ALLOC_PCT", "0.02")),
     }
 
+def df_to_md(df: pd.DataFrame) -> str:
+    """Safe markdown table: se 'tabulate' non è installato o pandas fallisce, fai fallback in CSV inline."""
+    try:
+        return df.to_markdown(index=False)
+    except Exception:
+        return "```\n" + df.to_csv(index=False) + "\n```"
+
 def ensure_portfolio():
     if not os.path.exists(POS_PATH):
         port = {"cash": 100000.0, "positions": {}, "nav_history": [], "fills": []}
@@ -39,7 +46,7 @@ def latest_price_symbol_map():
     # 1) Binance first
     for path in glob.glob("data/ohlc/*__binance_*.csv"):
         df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
-        if df.empty: 
+        if df.empty:
             continue
         last = df.iloc[-1]
         symbol = os.path.basename(path).split("__")[0].upper()
@@ -68,13 +75,13 @@ def latest_price_symbol_map():
     seen = {r["symbol"] for r in rows}
     # 2) CoinGecko OHLC
     for path in glob.glob("data/ohlc/*.csv"):
-        if "__binance_" in path: 
+        if "__binance_" in path:
             continue
         symbol = os.path.basename(path).split("__")[0].upper()
         if symbol in seen:
             continue
         df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
-        if df.empty: 
+        if df.empty:
             continue
         last = df.iloc[-1]
         price = float(last["close"])
@@ -105,7 +112,7 @@ def latest_price_symbol_map():
         if symbol in seen:
             continue
         df = pd.read_csv(path, parse_dates=["date"]).sort_values("date")
-        if df.empty: 
+        if df.empty:
             continue
         last = df.iloc[-1]
         rows.append({
@@ -227,7 +234,7 @@ def main():
         top = filtered.head(12)[["symbol","price","mcap","volume","r7","r30","vol20","score"]].copy()
         top.columns = ["Symbol","Price","MCap","Volume","R7","R30","Vol20","Score"]
         lines.append("## Top candidati\n")
-        lines.append(top.to_markdown(index=False))
+        lines.append(df_to_md(top))
         lines.append("")
     lines.append("## Ordini proposti\n")
     if orders:
