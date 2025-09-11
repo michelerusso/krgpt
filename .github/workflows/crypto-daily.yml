@@ -43,15 +43,15 @@ jobs:
       # ---- CCXT (exchange-grade OHLCV) ----
       - name: Build CCXT mapping (CG -> pairs)
         env:
-          CCXT_EXCHANGE: "binanceus"                       # cambia qui (es. "kraken", "kucoin")
+          CCXT_EXCHANGE: "kraken"                       # cambia qui (es. "binanceus", "kucoin")
           CCXT_QUOTES: "USDT,USD,FDUSD,USDC,TUSD,BTC,ETH,EUR"
           CCXT_MAX_COINS_MAP: "0"
         run: |
-          python scripts/build_ccxt_map.py || true         # non bloccare il job se l'exchange non è raggiungibile
+          python scripts/build_ccxt_map.py || true      # non bloccare se l'exchange è down
 
       - name: Fetch OHLCV from CCXT
         env:
-          CCXT_EXCHANGE: "binanceus"
+          CCXT_EXCHANGE: "kraken"
           CCXT_TIMEFRAME: "1d"
           CCXT_LIMIT: "1000"
           CCXT_MAX_COINS: "0"
@@ -59,7 +59,7 @@ jobs:
           python scripts/fetch_ohlc_ccxt.py || true
 
       # ---- CoinGecko (backup) ----
-      - name: Fetch OHLC (CoinGecko)  # backup
+      - name: Fetch OHLC (CoinGecko)
         env:
           OHLC_DAYS: "365"
           OHLC_SLEEP_S: "1.2"
@@ -74,6 +74,20 @@ jobs:
         run: |
           python scripts/simulator.py || true
 
+      - name: Kraken ALT scan (ranking + orders)
+        env:
+          MAX_MCAP_USD: "300000000"
+          MIN_DOLLAR_VOL: "75000"
+          RISK_PER_TRADE_BPS: "125"
+          STOP_LOSS_PCT: "0.20"
+          TAKE_PROFIT_PCT: "0.40"
+          MAX_NEW_POS: "6"
+          MAX_POSITIONS: "14"
+          MAX_ALLOC_PCT: "0.10"
+          MIN_ALLOC_PCT: "0.02"
+        run: |
+          python scripts/scan_kraken_today.py
+
       - name: Commit & rebase-safe push
         env:
           BRANCH: ${{ github.ref_name }}   # es. main
@@ -81,7 +95,7 @@ jobs:
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ portfolio/ data/exchange_map/ || true
+          git add data/ portfolio/ reports/ data/exchange_map/ || true
           git commit -m "Daily update (CG+CCXT OHLCV, sim, NAV): $(date -u +'%Y-%m-%d')" || echo "Nothing to commit"
           git fetch origin "$BRANCH"
           git config rebase.backend merge
