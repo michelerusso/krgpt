@@ -1,0 +1,102 @@
+{
+  "as_of": "2025-09-12",
+  "orders": [
+    {
+      "symbol": "KAITO",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "quantity": "ALL",
+      "notes": "Exit: score in bottom 30% of universe"
+    },
+    {
+      "symbol": "AKE",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "quantity": "ALL",
+      "notes": "Exit: score in bottom 30% of universe"
+    },
+    {
+      "symbol": "PTB",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "quantity": "ALL",
+      "notes": "Exit: score in bottom 30% of universe"
+    },
+    {
+      "symbol": "SOMI",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "quantity": "ALL",
+      "notes": "Exit: score in bottom 30% of universe"
+    },
+    {
+      "symbol": "HOLO",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "quantity": "ALL",
+      "notes": "Exit: score in bottom 30% of universe"
+    },
+    {
+      "symbol": "F",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "quantity": "ALL",
+      "notes": "Exit: score in bottom 30% of universe"
+    },
+    {
+      "symbol": "BB",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "quantity": "ALL",
+      "notes": "Exit: score in bottom 30% of universe"
+    },
+    {
+      "symbol": "USDC",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "quantity": "ALL",
+      "notes": "Exit: score in bottom 30% of universe"
+    },
+    {
+      "symbol": "LAUNCHCOIN",
+      "side": "BUY",
+      "order_type": "MARKET",
+      "notional_usd": 8972.94,
+      "quantity": 90951.81201,
+      "stop_loss_pct": 0.2,
+      "take_profit_pct": 0.4,
+      "notes": "score=3.6449, r7=0.461, r30=6.92, vol20=0.229"
+    },
+    {
+      "symbol": "HOLO",
+      "side": "BUY",
+      "order_type": "MARKET",
+      "notional_usd": 4486.47,
+      "quantity": 9714.256292,
+      "stop_loss_pct": 0.2,
+      "take_profit_pct": 0.4,
+      "notes": "score=-0.0458, r7=0.0, r30=0.0, vol20=0.229"
+    },
+    {
+      "symbol": "KAITO",
+      "side": "BUY",
+      "order_type": "MARKET",
+      "notional_usd": 2243.24,
+      "quantity": 1838.717616,
+      "stop_loss_pct": 0.2,
+      "take_profit_pct": 0.4,
+      "notes": "score=-0.0458, r7=0.0, r30=0.0, vol20=0.229"
+    }
+  ],
+  "assumptions": {
+    "MAX_MCAP_USD": 300000000.0,
+    "LIQ_PERCENTILE": 60.0,
+    "RISK_PER_TRADE_BPS": 125.0,
+    "STOP_LOSS_PCT": 0.2,
+    "TAKE_PROFIT_PCT": 0.4,
+    "MAX_NEW_POS": 8,
+    "MAX_POSITIONS": 14,
+    "MAX_ALLOC_PCT": 0.1,
+    "MIN_ALLOC_PCT": 0.02
+  }
+}
