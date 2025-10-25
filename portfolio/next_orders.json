@@ -1,5 +1,5 @@
 {
-  "as_of": "2025-10-18",
+  "as_of": "2025-10-25",
   "orders": [
     {
       "symbol": "KAITO",
@@ -68,21 +68,21 @@
       "notes": "score=3.6449, r7=0.461, r30=6.92, vol20=0.229"
     },
     {
-      "symbol": "TRB",
+      "symbol": "BAKE",
       "side": "BUY",
       "order_type": "MARKET",
       "notional_usd": 4486.47,
-      "quantity": 121.255973,
+      "quantity": 45002.868635,
       "stop_loss_pct": 0.2,
       "take_profit_pct": 0.4,
       "notes": "score=-0.0458, r7=0.0, r30=0.0, vol20=0.229"
     },
     {
-      "symbol": "DOLO",
+      "symbol": "UETH",
       "side": "BUY",
       "order_type": "MARKET",
       "notional_usd": 2243.24,
-      "quantity": 12435.820558,
+      "quantity": 0.507385,
       "stop_loss_pct": 0.2,
       "take_profit_pct": 0.4,
       "notes": "score=-0.0458, r7=0.0, r30=0.0, vol20=0.229"
